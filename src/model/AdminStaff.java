@@ -1,7 +1,7 @@
 package model;
 
 public class AdminStaff extends Staff{
-    public AdminStaff(String id, String name, int age, String gender, String staffId, String department) {
+    public AdminStaff(String id, String name, int age, Gender gender, String staffId, String department) {
         super(id, name, age, gender, staffId, "Admin", department);
     }
 

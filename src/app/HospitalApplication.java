@@ -6,6 +6,7 @@ import service.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -75,7 +76,7 @@ public class HospitalApplication {
     private void seedInitialData() {
         try {
             // Create initial admin (to onboard others)
-            AdminStaff admin = new AdminStaff("PER-ADMIN1", "Alice Admin", 35, "Female",
+            AdminStaff admin = new AdminStaff("PER-ADMIN1", "Alice Admin", 35, Gender.FEMALE,
                     "ADMIN001", "Administration");
             staffRepository.addStaff(admin);
 
@@ -83,22 +84,22 @@ public class HospitalApplication {
             currentStaff = admin;
 
             // Add doctors
-            Doctor doctor1 = staffService.onboardDoctor(currentStaff, "Dr. John Smith",
-                    45, "Male", "Cardiology", "Cardiologist");
+            Doctor doctor1 = staffService.onboardDoctor(currentStaff, "John Smith",
+                    45, Gender.MALE, "Cardiology", "Cardiologist");
 
-            Doctor doctor2 = staffService.onboardDoctor(currentStaff, "Dr. Sarah Johnson",
-                    38, "Female", "Pediatrics", "Pediatrician");
+            Doctor doctor2 = staffService.onboardDoctor(currentStaff, "Sarah Johnson",
+                    38, Gender.FEMALE, "Pediatrics", "Pediatrician");
 
             // Add nurses
             staffService.onboardNurse(currentStaff, "Mary Williams",
-                    30, "Female", "Emergency", "Ward A");
+                    30, Gender.FEMALE, "Emergency", "Ward A");
 
             // Add patients
             Patient patient1 = patientService.onboardPatient(currentStaff,
-                    "Michael Brown", 42, "Male");
+                    "Michael Brown", 42, Gender.MALE);
 
             Patient patient2 = patientService.onboardPatient(currentStaff,
-                    "Emily Davis", 28, "Female");
+                    "Emily Davis", 28, Gender.FEMALE);
 
             // Assign patients to doctors
             patientService.assignPatientToDoctor(currentStaff,
@@ -114,7 +115,7 @@ public class HospitalApplication {
             // Reset current staff (user must login)
             currentStaff = null;
 
-        } catch (AuthorizationService.UnauthorizedException e) {
+        } catch (Exception e) {
             System.err.println("Error seeding data: " + e.getMessage());
         }
     }
@@ -122,7 +123,7 @@ public class HospitalApplication {
     //Main application loop
     public void run() {
         System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║   HOSPITAL MANAGEMENT SYSTEM          ║");
+        System.out.println("║   HOSPITAL MANAGEMENT SYSTEM           ║");
         System.out.println("╚════════════════════════════════════════╝");
 
         while (true) {
@@ -155,7 +156,8 @@ public class HospitalApplication {
             return false;
         }
 
-        Staff staff = staffRepository.findById(staffId);
+        // Case-insensitive lookup
+        Staff staff = findStaffByIdCaseInsensitive(staffId);
         if (staff == null) {
             System.out.println("❌ Invalid Staff ID!");
             return login();
@@ -165,6 +167,16 @@ public class HospitalApplication {
         System.out.println("\n✅ Welcome, " + currentStaff.getName() +
                 " (" + currentStaff.getRole() + ")!");
         return true;
+    }
+
+    // Helper method for case-insensitive staff ID lookup
+    private Staff findStaffByIdCaseInsensitive(String staffId) {
+        for (Staff staff : staffRepository.findAll()) {
+            if (staff.getStaffId().equalsIgnoreCase(staffId)) {
+                return staff;
+            }
+        }
+        return null;
     }
 
     // The Main menu
@@ -193,11 +205,11 @@ public class HospitalApplication {
             case 6: viewPatientHistory(); break;
             case 7: logout(); break;
             case 0: System.exit(0); break;
-            default: System.out.println("Invalid option!");
+            default: System.out.println("❌ Invalid option!");
         }
     }
 
-    //STAFF MANAGEMENT
+    // ========== STAFF MANAGEMENT (WITH EXCEPTION HANDLING) ==========
 
     private void staffManagementMenu() {
         System.out.println("\n--- Staff Management ---");
@@ -219,10 +231,16 @@ public class HospitalApplication {
                 case 4: onboardNurse(); break;
                 case 5: onboardAdmin(); break;
                 case 0: return;
-                default: System.out.println("Invalid option!");
+                default: System.out.println("❌ Invalid option!");
             }
         } catch (AuthorizationService.UnauthorizedException e) {
             System.out.println("❌ UNAUTHORIZED: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ VALIDATION ERROR: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
@@ -248,7 +266,7 @@ public class HospitalApplication {
         String name = getStringInput("Name: ");
         System.out.print("Age: ");
         int age = getIntInput();
-        String gender = getStringInput("Gender: ");
+        Gender gender = getGenderInput();
         String department = getStringInput("Department: ");
         String specialization = getStringInput("Specialization: ");
 
@@ -264,7 +282,7 @@ public class HospitalApplication {
         String name = getStringInput("Name: ");
         System.out.print("Age: ");
         int age = getIntInput();
-        String gender = getStringInput("Gender: ");
+        Gender gender = getGenderInput();
         String department = getStringInput("Department: ");
         String ward = getStringInput("Ward: ");
 
@@ -280,7 +298,7 @@ public class HospitalApplication {
         String name = getStringInput("Name: ");
         System.out.print("Age: ");
         int age = getIntInput();
-        String gender = getStringInput("Gender: ");
+        Gender gender = getGenderInput();
         String department = getStringInput("Department: ");
 
         AdminStaff admin = staffService.onboardAdmin(currentStaff, name, age,
@@ -289,7 +307,7 @@ public class HospitalApplication {
         System.out.println(admin.getDisplayInfo());
     }
 
-    // PATIENT MANAGEMENT
+    // ========== PATIENT MANAGEMENT (WITH EXCEPTION HANDLING) ==========
 
     private void patientManagementMenu() {
         System.out.println("\n--- Patient Management ---");
@@ -309,10 +327,16 @@ public class HospitalApplication {
                 case 3: assignPatientToDoctor(); break;
                 case 4: searchPatientByName(); break;
                 case 0: return;
-                default: System.out.println("Invalid option!");
+                default: System.out.println("❌ Invalid option!");
             }
         } catch (AuthorizationService.UnauthorizedException e) {
             System.out.println("❌ UNAUTHORIZED: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
@@ -330,7 +354,7 @@ public class HospitalApplication {
         String name = getStringInput("Name: ");
         System.out.print("Age: ");
         int age = getIntInput();
-        String gender = getStringInput("Gender: ");
+        Gender gender = getGenderInput();
 
         Patient patient = patientService.onboardPatient(currentStaff, name, age, gender);
         System.out.println("✅ Patient onboarded successfully!");
@@ -338,7 +362,20 @@ public class HospitalApplication {
     }
 
     private void assignPatientToDoctor() throws AuthorizationService.UnauthorizedException {
-        String patientId = getStringInput("\nPatient ID: ");
+        // Show available doctors first
+        List<Staff> doctors = staffService.getAllDoctors();
+        if (doctors.isEmpty()) {
+            System.out.println("❌ No doctors available. Please onboard a doctor first.");
+            return;
+        }
+
+        System.out.println("\n--- Available Doctors ---");
+        for (Staff doctor : doctors) {
+            System.out.println("  " + doctor.getStaffId() + " - " + doctor.getName());
+        }
+        System.out.println();
+
+        String patientId = getStringInput("Patient ID: ");
         String doctorId = getStringInput("Doctor ID: ");
 
         patientService.assignPatientToDoctor(currentStaff, patientId, doctorId);
@@ -355,7 +392,7 @@ public class HospitalApplication {
         }
     }
 
-    // APPOINTMENT MANAGEMENT
+    // ========== APPOINTMENT MANAGEMENT (WITH EXCEPTION HANDLING) ==========
 
     private void appointmentManagementMenu() {
         System.out.println("\n--- Appointment Management ---");
@@ -377,10 +414,18 @@ public class HospitalApplication {
                 case 4: cancelAppointment(); break;
                 case 5: viewDoctorSchedule(); break;
                 case 0: return;
-                default: System.out.println("Invalid option!");
+                default: System.out.println("❌ Invalid option!");
             }
         } catch (AuthorizationService.UnauthorizedException e) {
             System.out.println("❌ UNAUTHORIZED: " + e.getMessage());
+        } catch (DateTimeParseException e) {
+            System.out.println("❌ INVALID DATE FORMAT: Use yyyy-MM-dd HH:mm (e.g., 2024-12-25 14:30)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("❌ CONFLICT: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
@@ -423,20 +468,26 @@ public class HospitalApplication {
     }
 
     private void viewDoctorSchedule() {
-        String doctorId = getStringInput("\nDoctor ID: ");
-        String dateStr = getStringInput("Date (yyyy-MM-dd): ");
+        try {
+            String doctorId = getStringInput("\nDoctor ID: ");
+            String dateStr = getStringInput("Date (yyyy-MM-dd): ");
 
-        LocalDateTime date = LocalDateTime.parse(dateStr + " 00:00",
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            LocalDateTime date = LocalDateTime.parse(dateStr + " 00:00",
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 
-        List<Appointment> schedule = appointmentService.getDoctorSchedule(doctorId, date);
-        System.out.println("\n========== SCHEDULE (" + schedule.size() + ") ==========");
-        for (Appointment apt : schedule) {
-            System.out.println(apt);
+            List<Appointment> schedule = appointmentService.getDoctorSchedule(doctorId, date);
+            System.out.println("\n========== SCHEDULE (" + schedule.size() + ") ==========");
+            for (Appointment apt : schedule) {
+                System.out.println(apt);
+            }
+        } catch (DateTimeParseException e) {
+            System.out.println("❌ INVALID DATE FORMAT: Use yyyy-MM-dd (e.g., 2024-12-25)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
         }
     }
 
-    //PRESCRIPTION MANAGEMENT
+    // ========== PRESCRIPTION MANAGEMENT (WITH EXCEPTION HANDLING) ==========
 
     private void prescriptionManagementMenu() {
         System.out.println("\n--- Prescription Management ---");
@@ -454,10 +505,16 @@ public class HospitalApplication {
                 case 2: createPrescription(); break;
                 case 3: viewPatientPrescriptions(); break;
                 case 0: return;
-                default: System.out.println("Invalid option!");
+                default: System.out.println("❌ Invalid option!");
             }
         } catch (AuthorizationService.UnauthorizedException e) {
             System.out.println("❌ UNAUTHORIZED: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
@@ -497,7 +554,7 @@ public class HospitalApplication {
         }
     }
 
-    //TREATMENT MANAGEMENT
+    // ========== TREATMENT MANAGEMENT (WITH EXCEPTION HANDLING) ==========
 
     private void treatmentManagementMenu() {
         System.out.println("\n--- Treatment Management ---");
@@ -515,10 +572,16 @@ public class HospitalApplication {
                 case 2: recordTreatment(); break;
                 case 3: viewPatientTreatments(); break;
                 case 0: return;
-                default: System.out.println("Invalid option!");
+                default: System.out.println("❌ Invalid option!");
             }
         } catch (AuthorizationService.UnauthorizedException e) {
             System.out.println("❌ UNAUTHORIZED: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
@@ -556,7 +619,7 @@ public class HospitalApplication {
         }
     }
 
-    // VIEW PATIENT HISTORY
+    // ========== VIEW PATIENT HISTORY (WITH EXCEPTION HANDLING) ==========
 
     private void viewPatientHistory() {
         try {
@@ -569,10 +632,14 @@ public class HospitalApplication {
 
         } catch (AuthorizationService.UnauthorizedException e) {
             System.out.println("❌ UNAUTHORIZED: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
-    // UTILITY METHODS
+    // ========== UTILITY METHODS ==========
 
     private void logout() {
         System.out.println("\n👋 Goodbye, " + currentStaff.getName() + "!");
@@ -583,9 +650,13 @@ public class HospitalApplication {
         while (true) {
             try {
                 String input = scanner.nextLine().trim();
+                if (input.isEmpty()) {
+                    System.out.print("Please enter a number: ");
+                    continue;
+                }
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.print("Please enter a valid number: ");
+                System.out.print("❌ Invalid number. Please try again: ");
             }
         }
     }
@@ -593,6 +664,17 @@ public class HospitalApplication {
     private String getStringInput(String prompt) {
         System.out.print(prompt);
         return scanner.nextLine().trim();
+    }
+
+    private Gender getGenderInput() {
+        while (true) {
+            try {
+                String input = getStringInput("Gender (Male/Female): ");
+                return Gender.fromString(input);
+            } catch (IllegalArgumentException e) {
+                System.out.println("❌ " + e.getMessage());
+            }
+        }
     }
 
     public static void main(String[] args) {

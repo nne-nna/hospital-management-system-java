@@ -27,7 +27,7 @@ public class TreatmentService {
         this.authService = authService;
     }
 
-    //Record a new treatment. Done by doctors after appointments
+    // Record a new treatment. Done by doctors after appointments
     public TreatmentRecord recordTreatment(Staff currentStaff, String patientId,
                                            String diagnosis, String treatmentNotes)
             throws AuthorizationService.UnauthorizedException {
@@ -35,7 +35,7 @@ public class TreatmentService {
         // Any staff can record treatments, most likely doctors.
         authService.requirePermission(currentStaff, "VIEW_HISTORY");
 
-        // check if patient exists
+        // Check if patient exists
         Patient patient = patientRepository.findById(patientId);
         if (patient == null) {
             throw new IllegalArgumentException("Patient not found: " + patientId);
@@ -44,6 +44,11 @@ public class TreatmentService {
         // Validate input
         if (diagnosis == null || diagnosis.trim().isEmpty()) {
             throw new IllegalArgumentException("Diagnosis cannot be empty");
+        }
+
+        // Treatment notes can be optional, but normalize
+        if (treatmentNotes == null) {
+            treatmentNotes = "";
         }
 
         // Create treatment record
@@ -55,7 +60,7 @@ public class TreatmentService {
 
         // Save treatment
         if (!treatmentRepository.addTreatment(treatment)) {
-            throw new IllegalStateException("Failed to record treatment");
+            throw new IllegalStateException("Failed to record treatment. ID may be duplicate: " + treatmentId);
         }
 
         // Add to patient's history
@@ -65,28 +70,47 @@ public class TreatmentService {
         return treatment;
     }
 
-    //Get all treatments for a patient
+    // Get all treatments for a patient
     public List<TreatmentRecord> getPatientTreatments(Staff currentStaff, String patientId)
             throws AuthorizationService.UnauthorizedException {
 
         authService.requirePermission(currentStaff, "VIEW_HISTORY");
+
+        if (patientId == null || patientId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Patient ID cannot be empty");
+        }
+
         return treatmentRepository.findByPatientId(patientId);
     }
 
-    //Get treatments by doctor
+    // Get treatments by doctor
     public List<TreatmentRecord> getDoctorTreatments(Staff currentStaff, String doctorId)
             throws AuthorizationService.UnauthorizedException {
 
         authService.requirePermission(currentStaff, "VIEW_HISTORY");
+
+        if (doctorId == null || doctorId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Doctor ID cannot be empty");
+        }
+
         return treatmentRepository.findByDoctorId(doctorId);
     }
 
-    //Find treatment by ID
+    // Find treatment by ID
     public TreatmentRecord findTreatmentById(String treatmentId) {
-        return treatmentRepository.findById(treatmentId);
+        if (treatmentId == null || treatmentId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Treatment ID cannot be empty");
+        }
+
+        TreatmentRecord treatment = treatmentRepository.findById(treatmentId);
+        if (treatment == null) {
+            throw new IllegalArgumentException("Treatment not found: " + treatmentId);
+        }
+
+        return treatment;
     }
 
-    //get all treatments
+    // Get all treatments
     public List<TreatmentRecord> getAllTreatments(Staff currentStaff)
             throws AuthorizationService.UnauthorizedException {
 

@@ -44,7 +44,7 @@ public class PatientRepository {
         return result;
     }
 
-    //Search patient by name, case insensitive and partial march
+    //Search patient by name, case insensitive... and partial march
     public List<Patient> searchByName(String namePart) {
         List<Patient> result = new ArrayList<>();
         String searchLower = namePart.toLowerCase();

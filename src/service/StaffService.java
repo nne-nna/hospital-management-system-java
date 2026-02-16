@@ -1,9 +1,6 @@
 package service;
 
-import model.AdminStaff;
-import model.Doctor;
-import model.Nurse;
-import model.Staff;
+import model.*;
 import repository.StaffRepository;
 import util.IdGenerator;
 
@@ -20,7 +17,7 @@ public class StaffService {
     }
 
     //Onboard a new doctor. Only the admin can do this
-    public Doctor onboardDoctor(Staff currentStaff, String name, int age, String gender, String department, String specialization) throws AuthorizationService.UnauthorizedException{
+    public Doctor onboardDoctor(Staff currentStaff, String name, int age, Gender gender, String department, String specialization) throws AuthorizationService.UnauthorizedException{
         //check authorization
         authService.requirePermission(currentStaff, "ONBOARD_STAFF");
 
@@ -39,7 +36,7 @@ public class StaffService {
     }
 
     //Onboard a new nurse
-    public Nurse onboardNurse(Staff currentStaff, String name, int age, String gender, String department, String ward) throws AuthorizationService.UnauthorizedException{
+    public Nurse onboardNurse(Staff currentStaff, String name, int age, Gender gender, String department, String ward) throws AuthorizationService.UnauthorizedException{
         authService.requirePermission(currentStaff, "ONBOARD_STAFF");
 
         String personId = "PER-" + IdGenerator.generateStaffId();
@@ -55,7 +52,7 @@ public class StaffService {
     }
 
     //Onboard a new admin staff
-    public AdminStaff onboardAdmin(Staff currentStaff, String name, int age, String gender, String department) throws AuthorizationService.UnauthorizedException {
+    public AdminStaff onboardAdmin(Staff currentStaff, String name, int age, Gender gender, String department) throws AuthorizationService.UnauthorizedException {
 
         authService.requirePermission(currentStaff, "ONBOARD_STAFF");
 

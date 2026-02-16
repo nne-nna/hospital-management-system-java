@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TreatmentRepository {
-    public Map<String, TreatmentRecord> treatmentMap;
+    private Map<String, TreatmentRecord> treatmentMap;
 
     public TreatmentRepository() {
         this.treatmentMap = new HashMap<>();

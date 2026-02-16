@@ -11,7 +11,7 @@ public class Patient extends Person{
     private final List<String> prescriptionIds;
     private String assignedDoctorId;
 
-    public Patient(String id, String name, int age, String gender, String patientId) {
+    public Patient(String id, String name, int age, Gender gender, String patientId) {
         super(id, name, age, gender);
         this.patientId = patientId;
         this.medicalHistory = new ArrayList<>();

@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AppointmentRespository {
-    private Map<String, Appointment> appointmentMap;
+    private Map<String, Appointment> appointmentMap; //enhances fast ID lookup. Map.get(key) is 0(1)
 
     public AppointmentRespository() {
         this.appointmentMap = new HashMap<>();
@@ -56,7 +56,7 @@ public class AppointmentRespository {
     public List<Appointment> findByDoctorAndDate(String doctorId, LocalDateTime date) {
         return appointmentMap.values().stream()
                 .filter(apt -> apt.getDoctorId().equals(doctorId))
-                .filter(apt -> apt.getDateTime().equals(date.toLocalDate()))
+                .filter(apt -> apt.getDateTime().toLocalDate().equals(date.toLocalDate()))
                 .filter(apt -> apt.getStatus() == Appointment.AppointmentStatus.SCHEDULED)
                 .sorted(Comparator.comparing(Appointment::getDateTime))
                 .collect(Collectors.toList());

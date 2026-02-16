@@ -26,12 +26,13 @@ public class PrescriptionService {
         this.authService = authService;
     }
 
-    //Create a new prescription. Only doctors can prescribe medication.
+    // Create a new prescription. Only doctors can prescribe medication.
     public Prescription createPrescription(Staff currentStaff, String patientId,
                                            String drugName, String dosage,
                                            int durationDays)
             throws AuthorizationService.UnauthorizedException {
 
+        // CRITICAL: Only doctors can prescribe
         authService.requirePermission(currentStaff, "PRESCRIBE");
 
         // Validate patient exists
@@ -48,7 +49,10 @@ public class PrescriptionService {
             throw new IllegalArgumentException("Dosage cannot be empty");
         }
         if (durationDays <= 0) {
-            throw new IllegalArgumentException("Duration must be positive");
+            throw new IllegalArgumentException("Duration must be positive. Provided: " + durationDays + " days");
+        }
+        if (durationDays > 365) {
+            throw new IllegalArgumentException("Duration cannot exceed 365 days. Provided: " + durationDays);
         }
 
         // Create prescription
@@ -60,7 +64,7 @@ public class PrescriptionService {
 
         // Save prescription
         if (!prescriptionRepository.addPrescription(prescription)) {
-            throw new IllegalStateException("Failed to create prescription");
+            throw new IllegalStateException("Failed to create prescription. ID may be duplicate: " + prescriptionId);
         }
 
         // Add to patient's record
@@ -70,36 +74,60 @@ public class PrescriptionService {
         return prescription;
     }
 
-    //Get all prescriptions for a patient
+    // Get all prescriptions for a patient
     public List<Prescription> getPatientPrescriptions(Staff currentStaff, String patientId)
             throws AuthorizationService.UnauthorizedException {
 
         authService.requirePermission(currentStaff, "VIEW_HISTORY");
+
+        if (patientId == null || patientId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Patient ID cannot be empty");
+        }
+
         return prescriptionRepository.findByPatientId(patientId);
     }
 
-    //Get prescriptions by doctor
+    // Get prescriptions by doctor
     public List<Prescription> getDoctorPrescriptions(Staff currentStaff, String doctorId)
             throws AuthorizationService.UnauthorizedException {
 
         authService.requirePermission(currentStaff, "VIEW_HISTORY");
+
+        if (doctorId == null || doctorId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Doctor ID cannot be empty");
+        }
+
         return prescriptionRepository.findByDoctorId(doctorId);
     }
 
-    //Search prescriptions by drug name
+    // Search prescriptions by drug name
     public List<Prescription> searchByDrugName(Staff currentStaff, String drugName)
             throws AuthorizationService.UnauthorizedException {
 
         authService.requirePermission(currentStaff, "VIEW_HISTORY");
+
+        if (drugName == null || drugName.trim().isEmpty()) {
+            return getAllPrescriptions(currentStaff); // Return all if search is empty
+        }
+
         return prescriptionRepository.findByDrugName(drugName);
     }
 
-    //Find prescription by ID
+    // Find prescription by ID
     public Prescription findPrescriptionById(String prescriptionId) {
-        return prescriptionRepository.findById(prescriptionId);
+        if (prescriptionId == null || prescriptionId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Prescription ID cannot be empty");
+        }
+
+        Prescription prescription = prescriptionRepository.findById(prescriptionId);
+        if (prescription == null) {
+            throw new IllegalArgumentException("Prescription not found: " + prescriptionId);
+        }
+
+        return prescription;
     }
 
-    //Get all prescriptions
+    // Get all prescriptions
     public List<Prescription> getAllPrescriptions(Staff currentStaff)
             throws AuthorizationService.UnauthorizedException {
 

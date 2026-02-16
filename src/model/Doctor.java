@@ -7,7 +7,7 @@ public class Doctor extends Staff {
     private String specialization;
     private List<String> assignedPatientsIds;
 
-    public Doctor(String id, String name, int age, String gender, String staffId, String department, String specialization) {
+    public Doctor(String id, String name, int age, Gender gender, String staffId, String department, String specialization) {
         super(id, name, age, gender, staffId, "Doctor", department);
         this.specialization = specialization;
         this.assignedPatientsIds = new ArrayList<>();

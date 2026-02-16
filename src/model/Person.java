@@ -5,9 +5,9 @@ public abstract class Person {
     private String Id;
     private String name;
     private int age;
-    private String gender;
+    private Gender gender;
 
-    public Person(String id, String name, int age, String gender) {
+    public Person(String id, String name, int age, Gender gender) {
         Id = id;
         this.name = name;
         this.age = age;
@@ -38,11 +38,11 @@ public abstract class Person {
         this.age = age;
     }
 
-    public String getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
 

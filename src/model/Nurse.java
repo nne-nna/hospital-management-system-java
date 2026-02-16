@@ -3,7 +3,7 @@ package model;
 public class Nurse extends Staff {
     private String ward;
 
-    public Nurse(String id, String name, int age, String gender, String staffId, String department, String ward) {
+    public Nurse(String id, String name, int age, Gender gender, String staffId, String department, String ward) {
         super(id, name, age, gender, staffId, "Nurse", department);
         this.ward = ward;
     }

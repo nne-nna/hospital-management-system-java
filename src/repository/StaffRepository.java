@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class StaffRepository {
-    private Map<String, Staff> staffMap; //This is in memory storage.
+    private Map<String, Staff> staffMap; //This is in memory storage. Doctor, Nurse, AdminStaff can all be in thi map.
 
     public StaffRepository() {
         this.staffMap = new HashMap<>();

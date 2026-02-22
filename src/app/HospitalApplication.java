@@ -209,7 +209,7 @@ public class HospitalApplication {
         }
     }
 
-    // ========== STAFF MANAGEMENT (WITH EXCEPTION HANDLING) ==========
+    // STAFF MANAGEMENT (WITH EXCEPTION HANDLING)
 
     private void staffManagementMenu() {
         System.out.println("\n--- Staff Management ---");
@@ -307,7 +307,7 @@ public class HospitalApplication {
         System.out.println(admin.getDisplayInfo());
     }
 
-    // ========== PATIENT MANAGEMENT (WITH EXCEPTION HANDLING) ==========
+    // PATIENT MANAGEMENT (WITH EXCEPTION HANDLING)
 
     private void patientManagementMenu() {
         System.out.println("\n--- Patient Management ---");
@@ -392,7 +392,7 @@ public class HospitalApplication {
         }
     }
 
-    // ========== APPOINTMENT MANAGEMENT (WITH EXCEPTION HANDLING) ==========
+    // APPOINTMENT MANAGEMENT (WITH EXCEPTION HANDLING)
 
     private void appointmentManagementMenu() {
         System.out.println("\n--- Appointment Management ---");
@@ -487,7 +487,7 @@ public class HospitalApplication {
         }
     }
 
-    // ========== PRESCRIPTION MANAGEMENT (WITH EXCEPTION HANDLING) ==========
+    // PRESCRIPTION MANAGEMENT (WITH EXCEPTION HANDLING)
 
     private void prescriptionManagementMenu() {
         System.out.println("\n--- Prescription Management ---");
@@ -554,7 +554,7 @@ public class HospitalApplication {
         }
     }
 
-    // ========== TREATMENT MANAGEMENT (WITH EXCEPTION HANDLING) ==========
+    //  TREATMENT MANAGEMENT (WITH EXCEPTION HANDLING)
 
     private void treatmentManagementMenu() {
         System.out.println("\n--- Treatment Management ---");
@@ -619,7 +619,7 @@ public class HospitalApplication {
         }
     }
 
-    // ========== VIEW PATIENT HISTORY (WITH EXCEPTION HANDLING) ==========
+    //  VIEW PATIENT HISTORY (WITH EXCEPTION HANDLING)
 
     private void viewPatientHistory() {
         try {
@@ -639,7 +639,7 @@ public class HospitalApplication {
         }
     }
 
-    // ========== UTILITY METHODS ==========
+    // UTILITY METHODS
 
     private void logout() {
         System.out.println("\n👋 Goodbye, " + currentStaff.getName() + "!");

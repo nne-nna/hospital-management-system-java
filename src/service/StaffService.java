@@ -29,7 +29,7 @@ public class StaffService {
         Doctor doctor = new Doctor(personId, name, age, gender, staffId, department, specialization);
 
         if(!staffRepository.addStaff(doctor)){
-            throw new IllegalStateException("Failed to add doctor - dupliacte ID");
+            throw new IllegalStateException("Failed to add doctor - duplicate ID");
         }
 
         return doctor;
